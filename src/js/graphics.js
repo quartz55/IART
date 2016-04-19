@@ -1,5 +1,5 @@
 function Graphics() {
-	this.renderer = PIXI.autoDetectRenderer(
+	this.renderer = new PIXI.WebGLRenderer(
 		256, 256,
 		{antialias: false, transparent: false, resolution: 1}
 	);
@@ -36,20 +36,42 @@ Graphics.prototype.drawBoard = function(board) {
 
 	for (var i = 0; i < board.height; ++i) {
 		for (var k = 0; k < board.width; ++k) {
+			
+			//if (b[i][k] == 0) continue;
+			
 			var rect = new PIXI.Graphics();
-			
-			rect.hitArea = new PIXI.Rectangle(k*squareSize, i*squareSize, squareSize, squareSize);
-			rect.interactive = true;
-			rect.cell = [k,i];
-			rect.mousedown = rect.touchstart = function(data) {
-				self.clickHandler(this.cell);
-			};
-			
 			rect.beginFill(this.colors[b[i][k]]);
 			rect.drawRect(k*squareSize, i*squareSize, squareSize, squareSize);
 			rect.endFill();
 			
+			rect.hitArea = new PIXI.Rectangle(k*squareSize, i*squareSize, squareSize, squareSize);
+			rect.interactive = true;
+			rect.cell = [k,i];
+			rect.mousedown = function(data) {
+				self.clickHandler(this.cell);
+			};
+			
+			var highlight = new PIXI.Graphics();
+			highlight.beginFill(0xffffff);
+			highlight.fillAlpha = 0.5;
+			highlight.drawRect(k*squareSize, i*squareSize, squareSize, squareSize);
+			highlight.endFill();
+			highlight.visible = false;
+			
+			rect.highlight = highlight;
+			
+			rect.mouseover = function(data) {
+				this.highlight.visible = true;
+				self.render();
+			};
+			
+			rect.mouseout = function(data) {
+				this.highlight.visible = false;
+				self.render();
+			};
+			
 			this.stage.addChild(rect);
+			this.stage.addChild(highlight);
 		}
 	}
 };
@@ -60,6 +82,10 @@ Graphics.prototype.drawHint = function(cell) {
 	rect.fillAlpha = 0.5;
 	rect.drawRect(cell[0]*this.squareSize, cell[1]*this.squareSize, this.squareSize, this.squareSize);
 	rect.endFill();
+	
+	var blur = new PIXI.filters.BlurFilter();
+	blur.blur = 2.5;
+	//rect.filters = [blur];
 
 	this.stage.addChild(rect);
 };

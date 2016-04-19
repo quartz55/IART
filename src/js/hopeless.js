@@ -3,7 +3,8 @@ Hopeless.DifficultyEnum = {
 	VERYEASY : 2,
 	EASY : 3,
 	NORMAL : 4,
-	HARD : 5
+	HARD : 5,
+	HARDER : 6
 };
 
 /**
@@ -62,10 +63,19 @@ Board.prototype.generate = function(difficulty) {
 };
 
 Board.prototype.toString = function() {
+	var ascii_hashtable = {
+		0: " ",
+		1: "#",
+		2: "*",
+		3: "+",
+		4: "%",
+		5: "?"
+	};
 	var aux = "";
 	for (var i = 0; i < this.height; ++i) {
 		for (var k = 0; k < this.width; ++k) {
-			aux += this.board[i][k] + " ";
+			var cell = this.board[i][k];
+			aux += ascii_hashtable[cell];
 		}
 		aux += "\n";
 	}
@@ -208,7 +218,7 @@ Board.prototype.getSuccessors = function() {
 		var succ = this.clone();
 		succ.removeIsland(clickable[i]);
 		succ.applyGravity();
-		succ.hint = clickable[i][0];
+		succ.hint = clickable[i][Math.floor(Math.random()*clickable[i].length)];
 		successors.push(succ);
 	}
 	
@@ -249,3 +259,17 @@ Board.prototype._getNeighbours = function(x, y) {
 	return neigh;
 };
 
+Board.prototype.equals = function(obj) {
+	if (this === obj) return true;
+	if (! obj instanceof Board) return false;
+	
+	if (this.height == obj.height && this.width == obj.width &&
+		this.board.length == obj.board.length) {
+		for (var i = 0; i < this.height; ++i)
+			for (var k = 0; k < this.width; ++k)
+				if (this.board[i][k] != obj.board[i][k]) return false;
+		return true;
+	}
+	
+	return false;
+};

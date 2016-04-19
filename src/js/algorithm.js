@@ -9,7 +9,7 @@ Heuristic.getBoardValue = function(board) {
         else ++smallIslands;
     }
     
-    var maxClicks = clickableIslands + Math.floor(smallIslands/2);
+    var maxClicks = clickableIslands + Math.ceil(smallIslands/2);
     
     /*console.log("Num islands: "+islands.length);
     console.log("Clickable islands: "+clickableIslands);
@@ -41,6 +41,7 @@ function astar(start, goal) {
 
 
     while (openSet.length > 0) {
+        //console.log(openSet.length);
         var currNode = openSet[0];
         for (var i = 1; i < openSet.length; ++i) {
             if (openSet[i].f < currNode.f) currNode = openSet[i];
@@ -50,6 +51,7 @@ function astar(start, goal) {
 
         openSet.splice(openSet.indexOf(currNode), 1);
         closedSet.push(currNode);
+        //console.log(closedSet.length);
 
         // Generate successors
         var successors = [];
@@ -58,101 +60,52 @@ function astar(start, goal) {
             var n = new Node(tmp[i]);
             n.parent = currNode;
             n.g = currNode.g + 1; // It's a successor so 1 click away
-            n.h = n.value - goal;
+            //n.h = n.value - goal;
+            n.h = 0;
             n.f = n.g+n.h;
             successors.push(n);
         }
         // ...
 
+        var opened = 0; var closed = 0; var swapped = 0; var open = 0;
         for (var i = 0; i < successors.length; ++i) {
             var succ = successors[i];
-            var closed = false;
+            var isClosed = false;
             for (var k = 0; k < closedSet.length; ++k) {
-                if (succ.b.board == closedSet[k].b.board) {
-                    closed = true;
+                if (succ.b.equals(closedSet[k].b)) {
+                    ++closed;
+                    isClosed = true;
                     break;
                 }
             }
 
-            if (!closed) {
-                var open = false;
+            if (!isClosed) {
+                var isOpen = false;
                 for (var k = 0; k < openSet.length; ++k) {
-                    if (succ.b.board == openSet[k].b.board) {
-                        open = true;
+                    if (succ.b.equals(openSet[k].b)) {
+                        isOpen = true;
+                        ++open;
                         if (succ.g < openSet[k].g) {
+                            ++swapped;
                             openSet[k] = succ;
                         }
                         break;
                     }
                 }
-                if (!open) {
+                if (!isOpen) {
+                    ++opened;
                     openSet.push(succ);
                 }
             }
         }
+        /*console.log(successors.length + " successors");
+        console.log("Opened: "+opened+"\n" +
+            "Open: "+open+"\n" +
+            "Closed: "+closed+"\n" +
+            "Swapped: "+swapped);
+            */
     }
     throw "Path not found";
-}
-
-function astar_iter(goal, openSet, closedSet) {
-    setTimeout(function () {
-        if (openSet.length > 0) {
-            var currNode = openSet[0];
-            for (var i = 1; i < openSet.length; ++i) {
-                if (openSet[i].f < currNode.f) currNode = openSet[i];
-            }
-
-            if (currNode.value <= goal) return makePath(currNode);
-
-            openSet.splice(openSet.indexOf(currNode), 1);
-            closedSet.push(currNode);
-
-            game.hopeless.board = currNode.b;
-            game.render();
-            console.log(currNode.value);
-
-            // Generate successors
-            var successors = [];
-            var tmp = currNode.b.getSuccessors();
-            for (var i = 0; i < tmp.length; ++i) {
-                var n = new Node(tmp[i]);
-                n.parent = currNode;
-                n.g = currNode.g + 1; // It's a successor so 1 click away
-                n.h = n.value - goal;
-                n.f = n.g+n.h;
-                successors.push(n);
-            }
-            // ...
-
-            for (var i = 0; i < successors.length; ++i) {
-                var succ = successors[i];
-                var closed = false;
-                for (var k = 0; k < closedSet.length; ++k) {
-                    if (succ.b.board == closedSet[k].b.board) {
-                        closed = true;
-                        break;
-                    }
-                }
-
-                if (!closed) {
-                    var open = false;
-                    for (var k = 0; k < openSet.length; ++k) {
-                        if (succ.b.board == openSet[k].b.board) {
-                            open = true;
-                            if (succ.g < openSet[k].g) {
-                                openSet[k] = succ;
-                            }
-                            break;
-                        }
-                    }
-                    if (!open) {
-                        openSet.push(succ);
-                    }
-                }
-            }
-            astar_iter(goal, openSet, closedSet);
-        }
-    }, 500);
 }
 
 function makePath(node) {
