@@ -1,23 +1,13 @@
 var Heuristic = {};
 
 Heuristic.getBoardValue = function(board) {
-    var islands = board.getIslands();
-    var smallIslands = 0;
-    var clickableIslands = 0;
-    for (var i = 0; i < islands.length; ++i) {
-        if (islands[i].length >= 2) ++clickableIslands;
-        else ++smallIslands;
-    }
-    
-    var maxClicks = clickableIslands + Math.ceil(smallIslands/2);
-    
-    /*console.log("Num islands: "+islands.length);
-    console.log("Clickable islands: "+clickableIslands);
-    console.log("Small islands: "+smallIslands);
-    console.log("Max clicks: "+maxClicks);
-    console.log(islands);*/
-    
-    return maxClicks;
+    var stats = board.getStats();
+    // console.log(stats);
+    var colors = board.getColors();
+    var clickable = board._getClickableIslands();
+    if (clickable.length < 1 && colors > 0) return 99999;
+
+    return colors.length;
 };
 
 function Node(board, g, h, parent) {
@@ -36,22 +26,27 @@ function astar(start, goal) {
     var openSet = [];
 
     var startNode = new Node(start);
-    startNode.f = 0;
+    startNode.h = startNode.value;
+    startNode.f = startNode.g+startNode.h;
     openSet.push(startNode);
+
+    var startingCells = start.getNumCells();
 
 
     while (openSet.length > 0) {
-        //console.log(openSet.length);
         var currNode = openSet[0];
         for (var i = 1; i < openSet.length; ++i) {
             if (openSet[i].f < currNode.f) currNode = openSet[i];
         }
 
-        if (currNode.value <= goal) return makePath(currNode);
+        if (currNode.b.getNumCells() <= goal) {
+            var path = makePath(currNode);
+            return path;
+        }
 
+        var removed = openSet.length;
         openSet.splice(openSet.indexOf(currNode), 1);
         closedSet.push(currNode);
-        //console.log(closedSet.length);
 
         // Generate successors
         var successors = [];
@@ -59,10 +54,13 @@ function astar(start, goal) {
         for (var i = 0; i < tmp.length; ++i) {
             var n = new Node(tmp[i]);
             n.parent = currNode;
-            n.g = currNode.g + 1; // It's a successor so 1 click away
-            //n.h = n.value - goal;
-            n.h = 0;
-            n.f = n.g+n.h;
+            n.g = currNode.g + 1;
+            n.h = n.value;
+
+            var weight = 1+n.b.getNumCells();
+            // n.f = n.g+n.h;
+            n.f = n.g+n.h*weight;
+            if (n.value > 9999) continue;
             successors.push(n);
         }
         // ...
@@ -98,14 +96,39 @@ function astar(start, goal) {
                 }
             }
         }
-        /*console.log(successors.length + " successors");
-        console.log("Opened: "+opened+"\n" +
-            "Open: "+open+"\n" +
-            "Closed: "+closed+"\n" +
-            "Swapped: "+swapped);
-            */
+        console.log("Curr F: "+currNode.f+" = "+currNode.g+" + "+currNode.h);
+        // console.log("Curr num of plays: "+currNode.b._getClickableIslands().length);
     }
-    throw "Path not found";
+    return [];
+}
+
+function Measure(fn, reps) {
+    reps = reps || 1;
+    var times = [];
+    for (var i = 0; i < reps; ++i) {
+        var time = new Date().getTime();
+        this.ret = fn();
+        times.push(new Date().getTime()-time);
+    }
+    var med = 0;
+    for (var i = 0; i < times.length; ++i)
+        med += times[i];
+    med /= times.length;
+
+    var min = Math.min.apply(null, times);
+    var max = Math.max.apply(null, times);
+    var desvio = Math.abs(max-min)/2;
+
+    this.times = times;
+    this.med = med;
+    this.desvio = desvio;
+
+    this.getTime = function() {
+        return {med:this.med, desvio:this.desvio};
+    };
+    this.toString = function() {
+        return ""+this.med+"ms+-"+this.desvio;
+    };
 }
 
 function makePath(node) {
