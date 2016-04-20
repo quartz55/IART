@@ -2,15 +2,21 @@ var SOLUTION = true;
 
 function Game() {
     this.hopeless = new Hopeless(Hopeless.DifficultyEnum.EASY, 20, 10);
+    this.graphics = new Graphics();
+
     var ex1 = [
-        [2,1,1,2,1],
-        [2,1,2,1,1],
-        [2,2,2,1,1],
-        [1,2,1,2,2],
-        [2,1,2,1,2]
+        [3, 1, 2, 1, 2, 1, 3, 3, 2, 2, 1, 3, 1, 2, 3, 1, 2, 3, 2, 2],
+        [3, 1, 2, 2, 2, 3, 1, 2, 3, 2, 1, 1, 1, 2, 2, 2, 2, 2, 1, 3],
+        [2, 3, 3, 3, 2, 2, 2, 1, 1, 3, 2, 1, 2, 3, 3, 2, 2, 2, 1, 3],
+        [3, 2, 1, 3, 2, 2, 3, 1, 1, 2, 1, 2, 2, 3, 2, 2, 2, 1, 2, 1],
+        [1, 2, 1, 1, 1, 1, 3, 1, 2, 3, 2, 1, 3, 3, 3, 2, 1, 3, 3, 2],
+        [2, 1, 3, 2, 1, 1, 3, 1, 2, 1, 1, 3, 1, 2, 2, 2, 2, 2, 1, 1],
+        [2, 1, 2, 1, 3, 2, 1, 1, 3, 2, 3, 2, 2, 1, 1, 1, 2, 2, 3, 1],
+        [1, 3, 2, 2, 3, 2, 3, 1, 2, 1, 3, 1, 1, 3, 1, 2, 2, 1, 3, 2],
+        [3, 3, 3, 1, 1, 2, 2, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 1, 1, 2],
+        [2, 2, 1, 3, 1, 2, 3, 2, 2, 1, 1, 2, 1, 1, 3, 3, 2, 1, 3, 1]
     ];
     // this.hopeless.board.board = ex1;
-    this.graphics = new Graphics();
 
     var self = this;
     this.graphics.clickHandler = function(cell) {
@@ -39,7 +45,8 @@ Game.prototype.render = function() {
                 solution = Game.makeSolution(solved_path);
             }
 
-            console.log("Final F cost: " + solution.cost);
+            console.log("Total cost: " + solution.totalCost);
+            console.log("Current cost: " + solution.getCost());
             console.log("Estimated cost: " + Heuristic.getBoardValue(this.hopeless.board));
             console.log("Hint: " + JSON.stringify(solution.getHint()));
             this.graphics.drawHint(solution.getHint());
@@ -65,11 +72,14 @@ Game.prototype.click = function(cell) {
 Game.makeSolution = function(path) {
     if (path.length === 0) throw "Couldn't find solution";
     var sol = {
-        cost: path[path.length - 1].f,
+        totalCost: path[path.length - 1].f,
         path: path,
         getHint: function() {
             if (this.path.length > 1) return this.path[1].b.hint;
             throw false;
+        },
+        getCost: function() {
+            return this.totalCost - this.path[0].g;
         },
         next: function() {
             this.path.shift();
@@ -84,3 +94,7 @@ Game.makeSolution = function(path) {
 var game = new Game();
 game.render();
 var solution = undefined;
+
+function getCurrentBoard() {
+    console.log(JSON.stringify(game.hopeless.board.board));
+}

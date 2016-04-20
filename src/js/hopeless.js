@@ -7,13 +7,6 @@ Hopeless.DifficultyEnum = {
     HARDER: 6
 };
 
-/**
- * Hopeless game class
- * @param difficulty
- * @param width
- * @param height
- * @constructor
- */
 function Hopeless(difficulty, width, height) {
     difficulty = difficulty || Hopeless.DifficultyEnum.NORMAL;
     width = width || 20;
@@ -38,13 +31,6 @@ Hopeless.prototype.clickCell = function(cell) {
     return changed;
 };
 
-/**
- * Board class
- * @param width int
- * @param height int
- * @param difficulty int
- * @constructor
- */
 function Board(width, height) {
     this.board = [];
 
@@ -60,26 +46,6 @@ Board.prototype.generate = function(difficulty) {
         }
         this.board.push(row);
     }
-};
-
-Board.prototype.toString = function() {
-    var ascii_hashtable = {
-        0: " ",
-        1: "#",
-        2: "*",
-        3: "+",
-        4: "%",
-        5: "?"
-    };
-    var aux = "";
-    for (var i = 0; i < this.height; ++i) {
-        for (var k = 0; k < this.width; ++k) {
-            var cell = this.board[i][k];
-            aux += ascii_hashtable[cell];
-        }
-        aux += "\n";
-    }
-    return aux;
 };
 
 Board.prototype.getIsland = function(cell) {
@@ -145,20 +111,6 @@ Board.prototype.getColorIslands = function(color) {
     return islands;
 };
 
-Board.prototype.applyGravity = function() {
-    // Vertical gravity
-    for (var i = this.height - 2; i >= 0; --i) {
-        for (var k = 0; k < this.width; ++k) {
-            this.fallCell([k, i]);
-        }
-    }
-
-    // Horizontal gravity
-    for (var i = 1; i < this.width; ++i) {
-        this.moveColumn(i);
-    }
-};
-
 Board.prototype.getColors = function() {
     var currColors = [];
     for (var i = 0; i < this.height; ++i) {
@@ -176,6 +128,20 @@ Board.prototype.getColors = function() {
     }
 
     return currColors;
+};
+
+Board.prototype.applyGravity = function() {
+    // Vertical gravity
+    for (var i = this.height - 2; i >= 0; --i) {
+        for (var k = 0; k < this.width; ++k) {
+            this.fallCell([k, i]);
+        }
+    }
+
+    // Horizontal gravity
+    for (var i = 1; i < this.width; ++i) {
+        this.moveColumn(i);
+    }
 };
 
 Board.prototype.fallCell = function(cell) {
@@ -235,10 +201,6 @@ Board.prototype.removeCell = function(cell) {
     return false;
 };
 
-Board.prototype._getClickableIslands = function() {
-    return this._trimNonClickable(this.getIslands());
-};
-
 Board.prototype.getSuccessors = function() {
     var successors = [];
     var clickable = this._getClickableIslands();
@@ -261,39 +223,6 @@ Board.prototype.getNumCells = function() {
     return sum;
 };
 
-Board.prototype.clone = function() {
-    var clone = new Board(this.width, this.height);
-
-    var b = [];
-    for (var i = 0; i < this.height; ++i) {
-        var tmp = [];
-        for (var k = 0; k < this.width; ++k) {
-            tmp.push(this.board[i][k]);
-        }
-        b.push(tmp);
-    }
-    clone.board = b;
-
-    return clone;
-};
-
-Board.prototype._trimNonClickable = function(islands) {
-    var clickable = [];
-    for (var i = 0; i < islands.length; ++i) {
-        if (islands[i].length >= 2) clickable.push(islands[i]);
-    }
-    return clickable;
-};
-
-Board.prototype._getNeighbours = function(x, y) {
-    var neigh = [];
-    if (this.board[y] && this.board[y][x + 1]) neigh.push([x + 1, y]);
-    if (this.board[y] && this.board[y][x - 1]) neigh.push([x - 1, y]);
-    if (this.board[y + 1] && this.board[y + 1][x]) neigh.push([x, y + 1]);
-    if (this.board[y - 1] && this.board[y - 1][x]) neigh.push([x, y - 1]);
-
-    return neigh;
-};
 
 Board.prototype.getStats = function() {
     var stats = {
@@ -323,4 +252,62 @@ Board.prototype.equals = function(obj) {
     }
 
     return false;
+};
+
+Board.prototype.clone = function() {
+    var clone = new Board(this.width, this.height);
+
+    var b = [];
+    for (var i = 0; i < this.height; ++i) {
+        var tmp = [];
+        for (var k = 0; k < this.width; ++k) {
+            tmp.push(this.board[i][k]);
+        }
+        b.push(tmp);
+    }
+    clone.board = b;
+
+    return clone;
+};
+
+Board.prototype.toString = function() {
+    var ascii_hashtable = {
+        0: " ",
+        1: "#",
+        2: "*",
+        3: "+",
+        4: "%",
+        5: "?"
+    };
+    var aux = "";
+    for (var i = 0; i < this.height; ++i) {
+        for (var k = 0; k < this.width; ++k) {
+            var cell = this.board[i][k];
+            aux += ascii_hashtable[cell];
+        }
+        aux += "\n";
+    }
+    return aux;
+};
+
+Board.prototype._getClickableIslands = function() {
+    return this._trimNonClickable(this.getIslands());
+};
+
+Board.prototype._trimNonClickable = function(islands) {
+    var clickable = [];
+    for (var i = 0; i < islands.length; ++i) {
+        if (islands[i].length >= 2) clickable.push(islands[i]);
+    }
+    return clickable;
+};
+
+Board.prototype._getNeighbours = function(x, y) {
+    var neigh = [];
+    if (this.board[y] && this.board[y][x + 1]) neigh.push([x + 1, y]);
+    if (this.board[y] && this.board[y][x - 1]) neigh.push([x - 1, y]);
+    if (this.board[y + 1] && this.board[y + 1][x]) neigh.push([x, y + 1]);
+    if (this.board[y - 1] && this.board[y - 1][x]) neigh.push([x, y - 1]);
+
+    return neigh;
 };
