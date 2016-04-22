@@ -29,7 +29,7 @@ function hashSet() {
   };
   this.count = function() {
     var counter = 0;
-    for (var key in object) {
+    for (var key in this._values) {
       counter++;
     }
     return counter;
