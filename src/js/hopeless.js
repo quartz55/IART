@@ -226,14 +226,18 @@ Board.prototype.getNumCells = function() {
 
 Board.prototype.getStats = function() {
     var stats = {
-        islands : []
+        islands: []
     };
     var colors = this.getColors();
     for (var i = 0; i < colors.length; ++i) {
         var color = colors[i];
         var islands = this.getColorIslands(color);
-        var clickable = this._trimNonClickable(islands);
-        stats.islands.push({color: color, islands: islands, click: clickable});
+        var clickable = Board.trimNonClickable(islands);
+        stats.islands.push({
+            color: color,
+            islands: islands,
+            click: clickable
+        });
     }
 
     return stats;
@@ -277,7 +281,8 @@ Board.prototype.toString = function() {
         2: "*",
         3: "+",
         4: "%",
-        5: "?"
+        5: "?",
+        6: "o"
     };
     var aux = "";
     for (var i = 0; i < this.height; ++i) {
@@ -291,10 +296,10 @@ Board.prototype.toString = function() {
 };
 
 Board.prototype._getClickableIslands = function() {
-    return this._trimNonClickable(this.getIslands());
+    return Board.trimNonClickable(this.getIslands());
 };
 
-Board.prototype._trimNonClickable = function(islands) {
+Board.trimNonClickable = function(islands) {
     var clickable = [];
     for (var i = 0; i < islands.length; ++i) {
         if (islands[i].length >= 2) clickable.push(islands[i]);
