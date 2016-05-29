@@ -1,27 +1,28 @@
 var Heuristic = {
     getBoardValue: function(board) {
         var total = 0;
-        // var islands = board.getIslands();
-        // var clickable = Board.trimNonClickable(islands);
-        // var not_clickable = islands.length-clickable.length;
 
-        // if (clickable.length === 0) return 0;
-        // for (var i = 0; i < clickable.length; ++i) {
-        //   total += Math.pow(clickable[i].length, 2);
-        // }
+        var islands = board.getIslands();
+        var clickable = Board.trimNonClickable(islands);
+        var not_clickable = islands.length-clickable.length;
 
-        var stats = board.getStats();
-        total = 0;
-        stats.islands.forEach(function(el) {
-            var tmp = 0;
-            el.click.forEach(function(island) {
-                tmp += island.length;
-            });
-            total += Math.pow(tmp, 2);
-        });
+        if (clickable.length === 0) return 0;
+        for (var i = 0; i < clickable.length; ++i) {
+          total += Math.pow(clickable[i].length, 2);
+        }
+
+        // var stats = board.getStats();
+        // total = 0;
+        // stats.islands.forEach(function(el) {
+        //     var tmp = 0;
+        //     el.click.forEach(function(island) {
+        //         tmp += island.length;
+        //     });
+        //     total += Math.pow(tmp, 2);
+        // });
 
         return -total;
-    },
+    }
 };
 
 function Node(board, parent, g, h) {
@@ -120,8 +121,19 @@ Solver.prototype.iter = function() {
 };
 
 Solver.prototype.solve = function(options) {
-    while (!this.iter());
-    console.log("Branches checked: " + this.closedSet.count());
+    var self = this;
+    Promise.config({cancellation: true});
+    return new Promise(function(resolve, reject, onCancel) {
+        var now = Date.now();
+        var interv = setInterval(function() {
+            if (self.iter()) {
+                clearInterval(interv);
+                console.log("Branches checked: " + self.closedSet.count());
+                return resolve(Date.now() - now);
+            }
+        }, 0);
+        onCancel(function() { console.error("Cancelled!"); clearInterval(interv); });
+    });
 };
 
 

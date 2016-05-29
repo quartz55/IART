@@ -2,11 +2,11 @@ var SOLUTION = true;
 
 function Game() {
     // this.hopeless = new Hopeless(Hopeless.DifficultyEnum.EASY, 10, 5);
-    this.hopeless = new Hopeless(Hopeless.DifficultyEnum.VERYEASY, 20, 10);
+    this.hopeless = new Hopeless(Hopeless.DifficultyEnum.NORMAL, 20, 10);
     this.graphics = new Graphics();
 
-    // var ex = [[3,1,3,2,3,3,1,2,3,2],[1,1,3,1,1,3,1,1,2,3],[1,3,1,2,2,2,2,3,3,1],[2,3,2,3,2,1,2,1,3,3],[2,1,2,2,3,1,3,1,1,2]];
-    // this.hopeless.board.board = ex;
+    var ex = [[4,1,2,1,4,3,1,4,4,3,2,1,3,4,4,3,4,1,3,3],[2,4,2,2,4,1,2,3,4,1,2,4,4,3,2,4,4,1,4,1],[4,3,3,1,1,3,1,1,2,1,2,2,2,3,4,4,3,1,2,4],[1,2,2,2,3,4,1,4,2,1,2,1,4,3,4,4,3,3,3,3],[4,4,3,4,3,4,3,2,1,1,4,4,4,4,2,2,2,4,1,4],[3,2,1,1,1,3,4,3,2,2,3,3,3,4,3,3,3,4,1,4],[1,3,1,2,2,4,1,4,3,2,1,4,4,1,4,4,2,1,2,2],[2,1,4,4,3,2,4,3,1,3,1,2,2,2,3,4,1,2,2,3],[1,4,4,3,3,1,4,4,4,1,3,1,4,3,2,1,1,1,4,4],[4,3,4,4,4,3,1,4,3,4,2,4,1,1,4,3,3,3,2,2]];
+    this.hopeless.board.board = ex;
 
     var self = this;
     this.graphics.clickHandler = function(cell) {
@@ -22,33 +22,43 @@ Game.prototype.render = function() {
     this.graphics.render();
 
     if (SOLUTION) {
-        if (solution === undefined || !solution.onTrack(this.hopeless.board)) {
+        if (!solution || !solution.onTrack(this.hopeless.board)) {
+            if (solving) solving.cancel();
             console.error("No previous solution");
             var solver = new Astar(this.hopeless.board);
-            var measure = new Measure(function() {
-                solver.solve();
-            });
-            measure.time();
-            console.log("");
-            console.info("---- Standard ----");
-            console.info(">  " + measure + "ms");
-            console.info(">  Cost: " + solver.solution.slice(-1).pop().getF() * -1);
-            console.log("");
+            solving = solver.solve().then(function(time) {
+                console.log("");
+                console.info("---- Standard ----");
+                console.info(">  " + time + "ms");
+                console.info(">  Cost: " + solver.solution.slice(-1).pop().getF() * -1);
+                console.log("");
 
-            var solved_path = solver.getSolution();
-            solution = Game.makeSolution(solved_path);
+                var solved_path = solver.getSolution();
+                solution = Game.makeSolution(solved_path);
+
+                console.log("Total cost: " + solution.totalCost * -1);
+                console.log("Current cost: " + solution.getCost() * -1);
+                console.log("Estimated cost: " + Heuristic.getBoardValue(this.hopeless.board) * -1);
+                console.log("Hint: " + JSON.stringify(solution.getHint()));
+                this.graphics.drawHint(solution.getHint());
+
+                solution.next();
+
+                this.graphics.render();
+            }.bind(this));
         }
+        else {
+            console.log("Total cost: " + solution.totalCost * -1);
+            console.log("Current cost: " + solution.getCost() * -1);
+            console.log("Estimated cost: " + Heuristic.getBoardValue(this.hopeless.board) * -1);
+            console.log("Hint: " + JSON.stringify(solution.getHint()));
+            this.graphics.drawHint(solution.getHint());
 
-        console.log("Total cost: " + solution.totalCost * -1);
-        console.log("Current cost: " + solution.getCost() * -1);
-        console.log("Estimated cost: " + Heuristic.getBoardValue(this.hopeless.board) * -1);
-        console.log("Hint: " + JSON.stringify(solution.getHint()));
-        this.graphics.drawHint(solution.getHint());
+            solution.next();
 
-        solution.next();
-
+            this.graphics.render();
+        }
     }
-    this.graphics.render();
 };
 
 Game.prototype.click = function(cell) {
@@ -81,6 +91,7 @@ Game.makeSolution = function(path) {
 };
 
 var solution;
+var solving;
 var game = new Game();
 game.render();
 

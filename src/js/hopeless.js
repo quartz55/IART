@@ -31,6 +31,8 @@ Hopeless.prototype.clickCell = function(cell) {
     return changed;
 };
 
+
+// BOARD PROTOTYPE
 function Board(width, height) {
     this.board = [];
 
@@ -53,7 +55,7 @@ Board.prototype.getIsland = function(cell) {
     var y = cell[1];
     if (!this.board[y] || !this.board[y][x]) return undefined;
     var color = this.board[y][x];
-    if (color == 0) return undefined;
+    if (color === 0) return undefined;
     var island = [
         [x, y]
     ];
@@ -72,7 +74,7 @@ Board.prototype.getIsland = function(cell) {
 
         if (this.board[curr[1]][curr[0]] == color && !exists) {
             island.push(curr);
-            var neigh = this._getNeighbours(curr[0], curr[1])
+            var neigh = this._getNeighbours(curr[0], curr[1]);
             open = open.concat(neigh);
         }
         open.shift();
@@ -148,23 +150,23 @@ Board.prototype.fallCell = function(cell) {
     var x = cell[0];
     var y = cell[1];
 
-    if (this.board[y][x] == 0) return;
+    if (this.board[y][x] === 0) return;
 
     var yf = y;
     do {
         ++yf;
-    } while (yf < this.height && this.board[yf][x] == 0);
+    } while (yf < this.height && this.board[yf][x] === 0);
 
     this.moveCell(cell, [x, yf - 1]);
 };
 
 Board.prototype.moveColumn = function(x) {
-    if (this.board[this.height - 1][x] == 0) return;
+    if (this.board[this.height - 1][x] === 0) return;
 
     var xf = x;
     do {
         --xf;
-    } while (xf >= 0 && this.board[this.height - 1][xf] == 0);
+    } while (xf >= 0 && this.board[this.height - 1][xf] === 0);
     ++xf;
     if (xf == x) return;
 

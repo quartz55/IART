@@ -85,13 +85,15 @@ Graphics.prototype.drawBoard = function(board) {
 Graphics.prototype.drawHint = function(cell) {
     var rect = new PIXI.Graphics();
     rect.beginFill(0xffffff);
-    rect.fillAlpha = 0.3;
-    rect.drawRect(cell[0] * this.squareSize, cell[1] * this.squareSize, this.squareSize, this.squareSize);
+    rect.fillAlpha = 0.8;
+    // rect.drawRect(cell[0] * this.squareSize, cell[1] * this.squareSize, this.squareSize, this.squareSize);
+    var radius = this.squareSize/2;
+    rect.drawCircle(cell[0]*this.squareSize+radius, cell[1]*this.squareSize+radius, radius*1.2);
     rect.endFill();
 
     var blur = new PIXI.filters.BlurFilter();
-    blur.blur = 2.5;
-    //rect.filters = [blur];
+    blur.padding = 100;
+    rect.filters = [blur];
 
     this.stage.addChild(rect);
 };

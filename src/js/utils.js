@@ -26,7 +26,7 @@ function Measure(fn) {
         this.times = times;
         this.med = med;
         this.desvio = desvio;
-    }
+    };
     this.getTime = function() {
         return {
             med: this.med,
@@ -140,12 +140,12 @@ BinaryHeap.prototype.sinkDown = function(n) {
         if (child2N < length) {
             var child2 = this.content[child2N],
                 child2Score = this.scoreFunction(child2);
-            if (child2Score < (swap == null ? elemScore : child1Score))
+            if (child2Score < (swap === null ? elemScore : child1Score))
                 swap = child2N;
         }
 
         // No need to swap further, we are done.
-        if (swap == null) break;
+        if (swap === null) break;
 
         // Otherwise, swap and continue.
         this.content[n] = this.content[swap];
