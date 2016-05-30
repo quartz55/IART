@@ -4,24 +4,68 @@
 <head>
     <title>Hopeless</title>
     <style>
-        * {
-            padding: 0;
-            margin: 0;
-        }
+      * {
+      max-width: 1500px;
+      margin: auto;
+      }
+      body {
+      font-family: sans-serif;
+      background-color: #222;
+      }
+      h1 {
+      color: #333;
+      background-color: #EEE;
+      padding: 0.5em;
+      margin: 0.3em auto;
+      }
+      canvas {
+      padding: 0;
+      margin: 0;
+      display: block;
+      }
+      #main {
+      border: 3px solid #EEE;
+      background-color: grey;
+      padding: 0.5em;
+      box-sizing: border-box;
+      }
+      #toolbar {
+      margin-top: 0.5em;
+      padding: 0.3em;
+      background-color: #ccc;
+      }
     </style>
 </head>
 
 <body>
-    <!-- LIBS -->
-    <script src="js/bluebird.min.js"></script>
-    <script src="js/pixi.min.js"></script>
-    <script src="js/hashset.min.js"></script>
+  <h1>Hopeless Solver</h1>
+  <div id="main">
+    <canvas id="game_canvas"></canvas>
+    <div id="toolbar">
+      <button id="new_game_btn">New Game</button>
+      <label for="difficulty">Difficulty</label>
+      <select name="difficulty" id="difficulty_select">
+        <option value="LOL">Why not? - 1 color</option>
+        <option value="VERYEASY">Very Easy - 2 colors</option>
+        <option value="EASY">Easy - 3 colors</option>
+        <option value="NORMAL" selected>Normal - 4 colors</option>
+        <option value="HARD">Hard - 5 colors</option>
+        <option value="HARDER">Very Hard - 6 colors</option>
+      </select>
+      <button id="solve_btn">Solve</button>
+    </div>
+  </div>
 
-    <script src="js/graphics.js"></script>
-    <script src="js/hopeless.js"></script>
-    <script src="js/algorithm.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/game.js"></script>
+  <!-- LIBS -->
+  <script src="js/bluebird.min.js"></script>
+  <script src="js/pixi.min.js"></script>
+  <script src="js/hashset.js"></script>
+
+  <script src="js/graphics.js"></script>
+  <script src="js/hopeless.js"></script>
+  <script src="js/algorithm.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/game.js"></script>
 </body>
 
 </html>

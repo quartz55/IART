@@ -38,6 +38,7 @@ function Board(width, height) {
 
     this.width = width;
     this.height = height;
+    this._cache = {};
 }
 
 Board.prototype.generate = function(difficulty) {
@@ -48,6 +49,11 @@ Board.prototype.generate = function(difficulty) {
         }
         this.board.push(row);
     }
+    return this;
+};
+
+Board.prototype.distance = function(b2) {
+    return this.getNumCells() - b2.getNumCells();
 };
 
 Board.prototype.getIsland = function(cell) {
@@ -218,11 +224,14 @@ Board.prototype.getSuccessors = function() {
 };
 
 Board.prototype.getNumCells = function() {
-    var sum = 0;
-    for (var i = 0; i < this.height; ++i)
-        for (var k = 0; k < this.width; ++k)
-            if (this.board[i][k] !== 0) sum++;
-    return sum;
+    if (!this._cache.numCells) {
+        var sum = 0;
+        for (var i = 0; i < this.height; ++i)
+            for (var k = 0; k < this.width; ++k)
+                if (this.board[i][k] !== 0) sum++;
+        this._cache.numCells = sum;
+    }
+    return this._cache.numCells;
 };
 
 

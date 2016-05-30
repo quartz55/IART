@@ -1,63 +1,59 @@
-var SOLUTION = true;
+function Game(difficulty) {
+    difficulty = difficulty || Hopeless.DifficultyEnum.NORMAL;
 
-function Game() {
-    // this.hopeless = new Hopeless(Hopeless.DifficultyEnum.EASY, 10, 5);
-    this.hopeless = new Hopeless(Hopeless.DifficultyEnum.NORMAL, 20, 10);
+    this.hopeless = new Hopeless(difficulty, 20, 10);
     this.graphics = new Graphics();
 
+    this.solver = new Astar(this.hopeless.board, Heuristics.heur1);
+
     var ex = [[4,1,2,1,4,3,1,4,4,3,2,1,3,4,4,3,4,1,3,3],[2,4,2,2,4,1,2,3,4,1,2,4,4,3,2,4,4,1,4,1],[4,3,3,1,1,3,1,1,2,1,2,2,2,3,4,4,3,1,2,4],[1,2,2,2,3,4,1,4,2,1,2,1,4,3,4,4,3,3,3,3],[4,4,3,4,3,4,3,2,1,1,4,4,4,4,2,2,2,4,1,4],[3,2,1,1,1,3,4,3,2,2,3,3,3,4,3,3,3,4,1,4],[1,3,1,2,2,4,1,4,3,2,1,4,4,1,4,4,2,1,2,2],[2,1,4,4,3,2,4,3,1,3,1,2,2,2,3,4,1,2,2,3],[1,4,4,3,3,1,4,4,4,1,3,1,4,3,2,1,1,1,4,4],[4,3,4,4,4,3,1,4,3,4,2,4,1,1,4,3,3,3,2,2]];
-    this.hopeless.board.board = ex;
+    // this.hopeless.board.board = ex;
 
     var self = this;
     this.graphics.clickHandler = function(cell) {
         return self.click(cell);
     };
+
 }
 
+Game.prototype.new = function(difficulty) {
+    this.hopeless = new Hopeless(difficulty, 20, 10);
+    this.solver.update(this.hopeless.board);
+};
+
 Game.prototype.render = function() {
-    this.graphics.stage.removeChildren();
     this.graphics.drawBoard(this.hopeless.board);
-    console.log(this.hopeless.board + "");
+    // console.log(this.hopeless.board + "");
+    console.log("Estimated cost: " + this.solver.heuristic.getBoardValue(this.hopeless.board) * -1);
+};
 
-    this.graphics.render();
+Game.prototype.step = function(){
+    console.log("");
+    console.log("Total cost: " + solution.totalCost * -1);
+    console.log("Current cost: " + solution.getCost() * -1);
+    console.log("Hint: " + JSON.stringify(solution.getHint()));
+    this.graphics.drawHint(solution.getHint());
 
-    if (SOLUTION) {
-        if (!solution || !solution.onTrack(this.hopeless.board)) {
-            if (solving) solving.cancel();
-            console.error("No previous solution");
-            var solver = new Astar(this.hopeless.board);
-            solving = solver.solve().then(function(time) {
-                console.log("");
-                console.info("---- Standard ----");
-                console.info(">  " + time + "ms");
-                console.info(">  Cost: " + solver.solution.slice(-1).pop().getF() * -1);
-                console.log("");
+    solution.next();
+};
 
-                var solved_path = solver.getSolution();
-                solution = Game.makeSolution(solved_path);
+Game.prototype.solve = function() {
+    if (!solution) {
+        if (solving) solving.cancel();
+        console.error("No previous solution");
+        this.solver.update(this.hopeless.board);
+        solving = this.solver.solve().then(function(time) {
+            console.log("");
+            console.info("---- Standard ----");
+            console.info(">  " + time + "ms");
+            console.info(">  Cost: " + this.solver.solution.slice(-1).pop().getF() * -1);
+            console.log("");
 
-                console.log("Total cost: " + solution.totalCost * -1);
-                console.log("Current cost: " + solution.getCost() * -1);
-                console.log("Estimated cost: " + Heuristic.getBoardValue(this.hopeless.board) * -1);
-                console.log("Hint: " + JSON.stringify(solution.getHint()));
-                this.graphics.drawHint(solution.getHint());
+            var solved_path = this.solver.getSolution();
+            solution = Game.makeSolution(solved_path);
 
-                solution.next();
-
-                this.graphics.render();
-            }.bind(this));
-        }
-        else {
-            console.log("Total cost: " + solution.totalCost * -1);
-            console.log("Current cost: " + solution.getCost() * -1);
-            console.log("Estimated cost: " + Heuristic.getBoardValue(this.hopeless.board) * -1);
-            console.log("Hint: " + JSON.stringify(solution.getHint()));
-            this.graphics.drawHint(solution.getHint());
-
-            solution.next();
-
-            this.graphics.render();
-        }
+            this.step();
+        }.bind(this));
     }
 };
 
@@ -65,6 +61,10 @@ Game.prototype.click = function(cell) {
     console.log("Clicked: " + JSON.stringify(cell));
     if (this.hopeless.clickCell(cell)) {
         this.render();
+
+        if (solution && solution.onTrack(this.hopeless.board))
+            this.step();
+        else solution = undefined;
     }
 };
 
@@ -92,9 +92,38 @@ Game.makeSolution = function(path) {
 
 var solution;
 var solving;
-var game = new Game();
-game.render();
+var game;
+
+function newGame(difficulty) {
+    if (game) {
+        game.new(difficulty);
+        game.render();
+    }
+    else {
+        game = new Game(difficulty);
+        game.render();
+    }
+    solution = undefined;
+}
+
+function animation() {
+    requestAnimationFrame(animation);
+
+    game.graphics.render();
+}
 
 function getCurrentBoard() {
     console.log(JSON.stringify(game.hopeless.board.board));
 }
+
+document.getElementById("new_game_btn").onclick = function () {
+    var selected_diff = document.getElementById("difficulty_select");
+    var diff = Hopeless.DifficultyEnum[selected_diff.options[selected_diff.selectedIndex].value];
+
+    newGame(diff);
+};
+
+document.getElementById("solve_btn").onclick = function() { game.solve(); };
+
+newGame();
+animation();

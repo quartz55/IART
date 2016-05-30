@@ -41,10 +41,18 @@ function Measure(fn) {
 function BinaryHeap(scoreFunction, array) {
     this.scoreFunction = scoreFunction;
     this.content = [];
-    if (array !== undefined) {
-        for (var i = 0; i < array.length; ++i) this.push(array[i]);
+    if (array) {
+        this.contents = array.map(function(elem) { return elem; });
     }
 }
+
+BinaryHeap.prototype.toHashSet = function() {
+    var set = {};
+    this.content.forEach(function (elem) {
+        set[elem] = elem;
+    });
+    return set;
+};
 
 BinaryHeap.prototype.push = function(element) {
     // Add the new element to the end of the array.

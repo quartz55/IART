@@ -1,17 +1,16 @@
 function Graphics() {
     this.renderer = new PIXI.autoDetectRenderer(
-        256, 256, {
-            antialias: false,
+        0, 0, {
+            view: document.getElementById("game_canvas"),
+            antialias: true,
             transparent: false,
             resolution: 1
         }
     );
-    this.renderer.view.style.position = "absolute";
-    this.renderer.view.style.display = "block";
-    this.renderer.autoResize = true;
-    this.renderer.resize(window.innerWidth, window.innerHeight);
 
-    document.body.appendChild(this.renderer.view);
+    this.parent = document.getElementById("main");
+    this.renderer.autoResize = true;
+
     this.stage = new PIXI.Container();
 
     this.colors = {
@@ -32,18 +31,26 @@ function Graphics() {
 }
 
 Graphics.prototype.drawBoard = function(board) {
+    this.board = board;
     var b = board.board;
+
+    // this.stage.removeChildren();
+    this.stage.destroy(true);
+    this.stage = new PIXI.Container();
+
     var self = this;
 
-    this.renderer.resize(window.innerWidth, window.innerHeight);
-
-    this.squareSize = Math.min(window.innerWidth / board.width, window.innerHeight / board.height);
+    var canvasStyle = window.getComputedStyle(this.parent, null);
+    var canvasWidth = this.parent.clientWidth - 2*parseInt(canvasStyle.getPropertyValue("padding"));
+    this.squareSize = canvasWidth / board.width;
     var squareSize = this.squareSize;
+
+    this.renderer.resize(canvasWidth, squareSize*board.height);
 
     for (var i = 0; i < board.height; ++i) {
         for (var k = 0; k < board.width; ++k) {
 
-            //if (b[i][k] == 0) continue;
+            if (b[i][k] === 0) continue;
 
             var rect = new PIXI.Graphics();
             rect.beginFill(this.colors[b[i][k]]);
@@ -68,12 +75,9 @@ Graphics.prototype.drawBoard = function(board) {
 
             rect.mouseover = function(data) {
                 this.highlight.visible = true;
-                self.render();
             };
-
             rect.mouseout = function(data) {
                 this.highlight.visible = false;
-                self.render();
             };
 
             this.stage.addChild(rect);
